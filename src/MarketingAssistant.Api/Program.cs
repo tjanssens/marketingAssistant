@@ -22,7 +22,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         ?? "Data Source=marketingassistant.db"));
 
 // Controllers + SignalR
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddSignalR();
 
 // Swagger

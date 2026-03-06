@@ -94,6 +94,7 @@
           },
           "defaultConfiguration": "development",
           "options": {
+            "port": 4303,
             "proxyConfig": "proxy.conf.json"
           }
         },

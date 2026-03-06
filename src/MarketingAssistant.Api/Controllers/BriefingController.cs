@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MarketingAssistant.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/briefings")]
 public class BriefingController : ControllerBase
 {
     private readonly AppDbContext _db;
