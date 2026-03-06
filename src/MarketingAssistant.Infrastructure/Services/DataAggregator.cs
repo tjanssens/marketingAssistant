@@ -24,7 +24,7 @@ public class DataAggregator
         _db = db;
     }
 
-    public async Task<AggregatedData> GetAggregatedDataAsync(int days = 7, CancellationToken ct = default)
+    public virtual async Task<AggregatedData> GetAggregatedDataAsync(int days = 7, CancellationToken ct = default)
     {
         var ordersTask = _wooCommerce.GetRecentOrdersAsync(days, ct);
         var productsTask = _wooCommerce.GetProductsAsync(ct);
