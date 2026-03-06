@@ -1,6 +1,10 @@
+using Discord;
+using Discord.WebSocket;
 using MarketingAssistant.Api.Hubs;
 using MarketingAssistant.Api.Middleware;
 using MarketingAssistant.Core.Interfaces;
+using MarketingAssistant.Discord;
+using MarketingAssistant.Discord.Handlers;
 using MarketingAssistant.Infrastructure.AI;
 using MarketingAssistant.Infrastructure.Connectors.Mock;
 using MarketingAssistant.Infrastructure.Data;
@@ -64,6 +68,22 @@ builder.Services.AddScoped<DataAggregator>();
 builder.Services.AddScoped<BriefingService>();
 builder.Services.AddScoped<IActionExecutor, ActionExecutor>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Discord bot
+builder.Services.Configure<DiscordOptions>(builder.Configuration.GetSection(DiscordOptions.SectionName));
+var discordToken = builder.Configuration["Discord:BotToken"];
+if (!string.IsNullOrEmpty(discordToken))
+{
+    builder.Services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+    {
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent
+    }));
+    builder.Services.AddSingleton<MessageHandler>();
+    builder.Services.AddSingleton<ButtonInteractionHandler>();
+    builder.Services.AddSingleton<ImageAttachmentHandler>();
+    builder.Services.AddSingleton<IDiscordNotifier, DiscordNotifier>();
+    builder.Services.AddHostedService<DiscordBotService>();
+}
 
 // Background jobs
 builder.Services.AddHostedService<DailyBriefingJob>();

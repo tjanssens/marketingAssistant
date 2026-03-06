@@ -9,12 +9,14 @@ namespace MarketingAssistant.Infrastructure.Services;
 public class NotificationService : INotificationService
 {
     private readonly IHubContext<DashboardHubMarker> _hub;
+    private readonly IDiscordNotifier? _discord;
     private readonly ILogger<NotificationService> _logger;
 
-    public NotificationService(IHubContext<DashboardHubMarker> hub, ILogger<NotificationService> logger)
+    public NotificationService(IHubContext<DashboardHubMarker> hub, ILogger<NotificationService> logger, IEnumerable<IDiscordNotifier> discordNotifiers)
     {
         _hub = hub;
         _logger = logger;
+        _discord = discordNotifiers.FirstOrDefault();
     }
 
     public async Task SendBriefingAsync(Briefing briefing, CancellationToken ct = default)
@@ -24,6 +26,18 @@ public class NotificationService : INotificationService
         );
         await _hub.Clients.All.SendAsync("NewBriefing", dto, ct);
         _logger.LogInformation("SignalR: NewBriefing sent for {Title}", briefing.Title);
+
+        if (_discord is not null)
+        {
+            try
+            {
+                await _discord.SendBriefingAsync(briefing, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send briefing to Discord");
+            }
+        }
     }
 
     public async Task SendAlertAsync(Alert alert, CancellationToken ct = default)
@@ -33,6 +47,18 @@ public class NotificationService : INotificationService
         );
         await _hub.Clients.All.SendAsync("NewAlert", dto, ct);
         _logger.LogInformation("SignalR: NewAlert sent for {Title}", alert.Title);
+
+        if (_discord is not null)
+        {
+            try
+            {
+                await _discord.SendAlertAsync(alert, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send alert to Discord");
+            }
+        }
     }
 
     public async Task SendActionUpdateAsync(ActionItem action, CancellationToken ct = default)
