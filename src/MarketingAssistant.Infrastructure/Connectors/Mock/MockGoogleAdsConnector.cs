@@ -45,10 +45,10 @@ public class MockGoogleAdsConnector : IGoogleAdsConnector
         {
             TotalSpend = totalSpend,
             TotalRevenue = totalRevenue,
-            Roas = totalRevenue / totalSpend,
+            Roas = totalSpend > 0 ? totalRevenue / totalSpend : 0m,
             Clicks = totalClicks,
             Impressions = totalImpressions,
-            Ctr = (decimal)totalClicks / totalImpressions * 100,
+            Ctr = totalImpressions > 0 ? (decimal)totalClicks / totalImpressions * 100 : 0m,
             Campaigns = Campaigns
         };
 

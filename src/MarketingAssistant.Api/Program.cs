@@ -1,9 +1,11 @@
 using MarketingAssistant.Api.Hubs;
 using MarketingAssistant.Api.Middleware;
 using MarketingAssistant.Core.Interfaces;
+using MarketingAssistant.Infrastructure.AI;
 using MarketingAssistant.Infrastructure.Connectors.Mock;
 using MarketingAssistant.Infrastructure.Data;
 using MarketingAssistant.Infrastructure.Services;
+using MarketingAssistant.Scheduling;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,13 +38,33 @@ builder.Services.AddCors(options =>
 // Connectors (mock/real toggle)
 if (builder.Configuration.GetValue<bool>("DevMode:UseMockConnectors"))
 {
-    builder.Services.AddSingleton<IWooCommerceConnector, MockWooCommerceConnector>();
-    builder.Services.AddSingleton<IGoogleAnalyticsConnector, MockGoogleAnalyticsConnector>();
-    builder.Services.AddSingleton<IGoogleAdsConnector, MockGoogleAdsConnector>();
+    builder.Services.AddScoped<IWooCommerceConnector, MockWooCommerceConnector>();
+    builder.Services.AddScoped<IGoogleAnalyticsConnector, MockGoogleAnalyticsConnector>();
+    builder.Services.AddScoped<IGoogleAdsConnector, MockGoogleAdsConnector>();
 }
+else
+{
+    // TODO: Register real connectors in Fase 7
+    throw new InvalidOperationException(
+        "Real connectors are not yet implemented. Set DevMode:UseMockConnectors=true in appsettings.json.");
+}
+
+// AI Brain
+builder.Services.Configure<AnthropicOptions>(builder.Configuration.GetSection(AnthropicOptions.SectionName));
+builder.Services.AddHttpClient<IAiBrainService, ClaudeAiBrainService>((sp, client) =>
+{
+    var options = builder.Configuration.GetSection(AnthropicOptions.SectionName).Get<AnthropicOptions>() ?? new AnthropicOptions();
+    client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+    client.DefaultRequestHeaders.Add("x-api-key", options.ApiKey);
+    client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+});
 
 // Services
 builder.Services.AddScoped<DataAggregator>();
+builder.Services.AddScoped<BriefingService>();
+
+// Background jobs
+builder.Services.AddHostedService<DailyBriefingJob>();
 
 var app = builder.Build();
 

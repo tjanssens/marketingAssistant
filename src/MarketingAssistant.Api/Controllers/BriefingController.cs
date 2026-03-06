@@ -1,5 +1,7 @@
 using MarketingAssistant.Core.DTOs;
+using MarketingAssistant.Core.Models;
 using MarketingAssistant.Infrastructure.Data;
+using MarketingAssistant.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +12,12 @@ namespace MarketingAssistant.Api.Controllers;
 public class BriefingController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly BriefingService _briefingService;
 
-    public BriefingController(AppDbContext db)
+    public BriefingController(AppDbContext db, BriefingService briefingService)
     {
         _db = db;
+        _briefingService = briefingService;
     }
 
     [HttpGet]
@@ -44,25 +48,25 @@ public class BriefingController : ControllerBase
         if (briefing is null)
             return NotFound();
 
-        var dto = new BriefingDto(
-            briefing.Id,
-            briefing.GeneratedAt,
-            briefing.Title,
-            briefing.Content,
-            briefing.Period,
-            briefing.Actions.Select(a => new ActionItemDto(
-                a.Id, a.BriefingId, a.Description, a.Type, a.Status,
-                a.SuggestedAt, a.ResolvedAt, a.ResolvedBy, a.AiReasoning
-            )).ToList()
-        );
-
-        return Ok(dto);
+        return Ok(MapToDto(briefing));
     }
 
     [HttpPost("generate")]
-    public ActionResult<object> Generate()
+    public async Task<ActionResult<BriefingDto>> Generate(CancellationToken ct)
     {
-        // TODO: Wire up BriefingService in Fase 3
-        return Ok(new { message = "Briefing generation not yet implemented" });
+        var briefing = await _briefingService.GenerateAsync(ct);
+        return Ok(MapToDto(briefing));
     }
+
+    private static BriefingDto MapToDto(Briefing briefing) => new(
+        briefing.Id,
+        briefing.GeneratedAt,
+        briefing.Title,
+        briefing.Content,
+        briefing.Period,
+        briefing.Actions.Select(a => new ActionItemDto(
+            a.Id, a.BriefingId, a.Description, a.Type, a.Status,
+            a.SuggestedAt, a.ResolvedAt, a.ResolvedBy, a.AiReasoning
+        )).ToList()
+    );
 }
