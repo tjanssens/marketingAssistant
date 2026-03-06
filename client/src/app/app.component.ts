@@ -20,6 +20,7 @@ import { SignalRService } from './core/services/signalr.service';
       <nav>
         <a mat-button routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a mat-button routerLink="/briefings" routerLinkActive="active">Briefings</a>
+        <a mat-button routerLink="/alerts" routerLinkActive="active">Alerts</a>
         <a mat-button routerLink="/actions" routerLinkActive="active">Acties</a>
         <a mat-button routerLink="/settings" routerLinkActive="active">Instellingen</a>
       </nav>

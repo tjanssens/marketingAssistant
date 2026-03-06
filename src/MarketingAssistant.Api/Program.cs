@@ -68,6 +68,7 @@ builder.Services.AddScoped<DataAggregator>();
 builder.Services.AddScoped<BriefingService>();
 builder.Services.AddScoped<IActionExecutor, ActionExecutor>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<AlertService>();
 
 // Discord bot
 builder.Services.Configure<DiscordOptions>(builder.Configuration.GetSection(DiscordOptions.SectionName));
@@ -87,6 +88,7 @@ if (!string.IsNullOrEmpty(discordToken))
 
 // Background jobs
 builder.Services.AddHostedService<DailyBriefingJob>();
+builder.Services.AddHostedService<HourlyAlertCheckJob>();
 
 var app = builder.Build();
 

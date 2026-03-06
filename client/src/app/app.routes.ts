@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/briefings/briefing-detail.component').then(m => m.BriefingDetailComponent),
   },
   {
+    path: 'alerts',
+    loadComponent: () => import('./features/alerts/alerts.component').then(m => m.AlertsComponent),
+  },
+  {
     path: 'actions',
     loadComponent: () => import('./features/actions/actions.component').then(m => m.ActionsComponent),
   },

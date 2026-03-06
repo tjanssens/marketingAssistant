@@ -6,6 +6,7 @@ import {
   BriefingSummaryDto,
   BriefingDto,
   ActionItemDto,
+  AlertDto,
   HealthResponse,
 } from '../models';
 
@@ -47,6 +48,10 @@ export class ApiService {
 
   rejectAction(id: number): Observable<ActionItemDto> {
     return this.http.post<ActionItemDto>(`${this.baseUrl}/actions/${id}/reject`, {});
+  }
+
+  getAlerts(): Observable<AlertDto[]> {
+    return this.http.get<AlertDto[]>(`${this.baseUrl}/alerts`);
   }
 
   getSettings(): Observable<unknown> {
