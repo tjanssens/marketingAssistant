@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MarketingAssistant.Core\MarketingAssistant.Core.csproj" />
+    <ProjectReference Include="..\MarketingAssistant.Infrastructure\MarketingAssistant.Infrastructure.csproj" />
+    <ProjectReference Include="..\MarketingAssistant.Discord\MarketingAssistant.Discord.csproj" />
+    <ProjectReference Include="..\MarketingAssistant.Scheduling\MarketingAssistant.Scheduling.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MarketingAssistant.Core\MarketingAssistant.Core.csproj" />
+    <ProjectReference Include="..\MarketingAssistant.Infrastructure\MarketingAssistant.Infrastructure.csproj" />
+  </ItemGroup>
+
+
+</Project>

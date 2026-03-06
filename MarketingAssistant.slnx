@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MarketingAssistant.Api/MarketingAssistant.Api.csproj" />
+    <Project Path="src/MarketingAssistant.Core/MarketingAssistant.Core.csproj" />
+    <Project Path="src/MarketingAssistant.Discord/MarketingAssistant.Discord.csproj" />
+    <Project Path="src/MarketingAssistant.Infrastructure/MarketingAssistant.Infrastructure.csproj" />
+    <Project Path="src/MarketingAssistant.Scheduling/MarketingAssistant.Scheduling.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MarketingAssistant.Core.Tests/MarketingAssistant.Core.Tests.csproj" />
+    <Project Path="tests/MarketingAssistant.Discord.Tests/MarketingAssistant.Discord.Tests.csproj" />
+    <Project Path="tests/MarketingAssistant.Infrastructure.Tests/MarketingAssistant.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
