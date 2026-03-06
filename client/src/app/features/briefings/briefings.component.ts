@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
+import { SignalRService } from '../../core/services/signalr.service';
 import { BriefingSummaryDto } from '../../core/models';
 
 @Component({
@@ -38,15 +40,28 @@ import { BriefingSummaryDto } from '../../core/models';
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   `]
 })
-export class BriefingsComponent implements OnInit {
+export class BriefingsComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
+  private readonly signalR = inject(SignalRService);
+  private subscription?: Subscription;
   briefings: BriefingSummaryDto[] = [];
 
   ngOnInit(): void {
-    this.api.getBriefings().subscribe(b => this.briefings = b);
+    this.loadBriefings();
+    this.subscription = this.signalR.newBriefing$.subscribe(briefing => {
+      this.briefings = [briefing, ...this.briefings];
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   generate(): void {
-    this.api.generateBriefing().subscribe(() => this.ngOnInit());
+    this.api.generateBriefing().subscribe(() => this.loadBriefings());
+  }
+
+  private loadBriefings(): void {
+    this.api.getBriefings().subscribe(b => this.briefings = b);
   }
 }

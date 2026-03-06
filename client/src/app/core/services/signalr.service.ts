@@ -1,14 +1,14 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
-import { BriefingDto, AlertDto, ActionItemDto } from '../models';
+import { BriefingSummaryDto, AlertDto, ActionItemDto } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class SignalRService {
   private readonly zone = inject(NgZone);
   private hubConnection: signalR.HubConnection | null = null;
 
-  readonly newBriefing$ = new Subject<BriefingDto>();
+  readonly newBriefing$ = new Subject<BriefingSummaryDto>();
   readonly newAlert$ = new Subject<AlertDto>();
   readonly actionUpdated$ = new Subject<ActionItemDto>();
 
@@ -20,7 +20,7 @@ export class SignalRService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.on('NewBriefing', (briefing: BriefingDto) => {
+    this.hubConnection.on('NewBriefing', (briefing: BriefingSummaryDto) => {
       this.zone.run(() => this.newBriefing$.next(briefing));
     });
 

@@ -10,13 +10,16 @@ public class BriefingService
     private readonly DataAggregator _aggregator;
     private readonly IAiBrainService _ai;
     private readonly AppDbContext _db;
+    private readonly INotificationService _notifications;
     private readonly ILogger<BriefingService> _logger;
 
-    public BriefingService(DataAggregator aggregator, IAiBrainService ai, AppDbContext db, ILogger<BriefingService> logger)
+    public BriefingService(DataAggregator aggregator, IAiBrainService ai, AppDbContext db,
+        INotificationService notifications, ILogger<BriefingService> logger)
     {
         _aggregator = aggregator;
         _ai = ai;
         _db = db;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -31,6 +34,7 @@ public class BriefingService
         await _db.SaveChangesAsync(ct);
 
         await _aggregator.CreateSnapshotAsync(data, ct);
+        await _notifications.SendBriefingAsync(briefing, ct);
 
         _logger.LogInformation("Briefing generated: {Title} with {ActionCount} actions", briefing.Title, briefing.Actions.Count);
         return briefing;

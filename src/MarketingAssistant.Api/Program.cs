@@ -62,6 +62,8 @@ builder.Services.AddHttpClient<IAiBrainService, ClaudeAiBrainService>((sp, clien
 // Services
 builder.Services.AddScoped<DataAggregator>();
 builder.Services.AddScoped<BriefingService>();
+builder.Services.AddScoped<IActionExecutor, ActionExecutor>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Background jobs
 builder.Services.AddHostedService<DailyBriefingJob>();

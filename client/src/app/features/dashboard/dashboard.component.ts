@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
+import { SignalRService } from '../../core/services/signalr.service';
 import { DashboardDto } from '../../core/models';
 
 @Component({
@@ -98,11 +100,26 @@ import { DashboardDto } from '../../core/models';
     .severity-info { border-left: 4px solid #2196f3; padding-left: 8px; }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
+  private readonly signalR = inject(SignalRService);
+  private subscriptions: Subscription[] = [];
   data: DashboardDto | null = null;
 
   ngOnInit(): void {
+    this.loadDashboard();
+    this.subscriptions.push(
+      this.signalR.newBriefing$.subscribe(() => this.loadDashboard()),
+      this.signalR.newAlert$.subscribe(() => this.loadDashboard()),
+      this.signalR.actionUpdated$.subscribe(() => this.loadDashboard()),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  private loadDashboard(): void {
     this.api.getDashboard().subscribe(d => this.data = d);
   }
 }

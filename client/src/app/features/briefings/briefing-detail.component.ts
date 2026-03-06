@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
+import { SignalRService } from '../../core/services/signalr.service';
 import { BriefingDto } from '../../core/models';
 
 @Component({
@@ -59,21 +61,38 @@ import { BriefingDto } from '../../core/models';
     .status-rejected { background-color: #ffebee !important; }
   `]
 })
-export class BriefingDetailComponent implements OnInit {
+export class BriefingDetailComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
+  private readonly signalR = inject(SignalRService);
   private readonly route = inject(ActivatedRoute);
+  private subscription?: Subscription;
   briefing: BriefingDto | null = null;
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.api.getBriefing(id).subscribe(b => this.briefing = b);
+    this.loadBriefing();
+    this.subscription = this.signalR.actionUpdated$.subscribe(updated => {
+      if (!this.briefing) return;
+      const idx = this.briefing.actions.findIndex(a => a.id === updated.id);
+      if (idx >= 0) {
+        this.briefing.actions[idx] = updated;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   approve(actionId: number): void {
-    this.api.approveAction(actionId).subscribe(() => this.ngOnInit());
+    this.api.approveAction(actionId).subscribe();
   }
 
   reject(actionId: number): void {
-    this.api.rejectAction(actionId).subscribe(() => this.ngOnInit());
+    this.api.rejectAction(actionId).subscribe();
+  }
+
+  private loadBriefing(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.api.getBriefing(id).subscribe(b => this.briefing = b);
   }
 }

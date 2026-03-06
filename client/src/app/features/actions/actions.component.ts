@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
+import { SignalRService } from '../../core/services/signalr.service';
 import { ActionItemDto } from '../../core/models';
 
 @Component({
@@ -58,13 +60,25 @@ import { ActionItemDto } from '../../core/models';
     mat-button-toggle-group { margin-bottom: 16px; }
   `]
 })
-export class ActionsComponent implements OnInit {
+export class ActionsComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
+  private readonly signalR = inject(SignalRService);
+  private subscription?: Subscription;
   actions: ActionItemDto[] = [];
   filter = '';
 
   ngOnInit(): void {
     this.loadActions();
+    this.subscription = this.signalR.actionUpdated$.subscribe(updated => {
+      const idx = this.actions.findIndex(a => a.id === updated.id);
+      if (idx >= 0) {
+        this.actions[idx] = updated;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   filterChanged(value: string): void {

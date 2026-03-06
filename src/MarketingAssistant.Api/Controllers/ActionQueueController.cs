@@ -1,5 +1,7 @@
 using MarketingAssistant.Core.DTOs;
 using MarketingAssistant.Core.Enums;
+using MarketingAssistant.Core.Interfaces;
+using MarketingAssistant.Core.Models;
 using MarketingAssistant.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +13,12 @@ namespace MarketingAssistant.Api.Controllers;
 public class ActionQueueController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IActionExecutor _executor;
 
-    public ActionQueueController(AppDbContext db)
+    public ActionQueueController(AppDbContext db, IActionExecutor executor)
     {
         _db = db;
+        _executor = executor;
     }
 
     [HttpGet]
@@ -40,42 +44,41 @@ public class ActionQueueController : ControllerBase
     [HttpPost("{id:int}/approve")]
     public async Task<ActionResult<ActionItemDto>> Approve(int id, CancellationToken ct)
     {
-        var action = await _db.ActionItems.FindAsync([id], ct);
-        if (action is null)
+        try
+        {
+            var action = await _executor.ApproveAsync(id, "dashboard", ct);
+            return Ok(MapToDto(action));
+        }
+        catch (KeyNotFoundException)
+        {
             return NotFound();
-
-        if (action.Status != ActionStatus.Pending)
-            return BadRequest(new { error = "Action is not in Pending status" });
-
-        action.Status = ActionStatus.Approved;
-        action.ResolvedAt = DateTime.UtcNow;
-        action.ResolvedBy = "dashboard";
-        await _db.SaveChangesAsync(ct);
-
-        return Ok(new ActionItemDto(
-            action.Id, action.BriefingId, action.Description, action.Type, action.Status,
-            action.SuggestedAt, action.ResolvedAt, action.ResolvedBy, action.AiReasoning
-        ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("{id:int}/reject")]
     public async Task<ActionResult<ActionItemDto>> Reject(int id, CancellationToken ct)
     {
-        var action = await _db.ActionItems.FindAsync([id], ct);
-        if (action is null)
+        try
+        {
+            var action = await _executor.RejectAsync(id, "dashboard", ct);
+            return Ok(MapToDto(action));
+        }
+        catch (KeyNotFoundException)
+        {
             return NotFound();
-
-        if (action.Status != ActionStatus.Pending)
-            return BadRequest(new { error = "Action is not in Pending status" });
-
-        action.Status = ActionStatus.Rejected;
-        action.ResolvedAt = DateTime.UtcNow;
-        action.ResolvedBy = "dashboard";
-        await _db.SaveChangesAsync(ct);
-
-        return Ok(new ActionItemDto(
-            action.Id, action.BriefingId, action.Description, action.Type, action.Status,
-            action.SuggestedAt, action.ResolvedAt, action.ResolvedBy, action.AiReasoning
-        ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
+
+    private static ActionItemDto MapToDto(ActionItem a) => new(
+        a.Id, a.BriefingId, a.Description, a.Type, a.Status,
+        a.SuggestedAt, a.ResolvedAt, a.ResolvedBy, a.AiReasoning
+    );
 }

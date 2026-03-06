@@ -1,11 +1,7 @@
-using Microsoft.AspNetCore.SignalR;
+using MarketingAssistant.Infrastructure.Services;
 
 namespace MarketingAssistant.Api.Hubs;
 
-public class DashboardHub : Hub
+public class DashboardHub : DashboardHubMarker
 {
-    public override async Task OnConnectedAsync()
-    {
-        await base.OnConnectedAsync();
-    }
 }
