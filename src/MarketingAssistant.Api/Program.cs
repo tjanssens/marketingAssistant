@@ -6,7 +6,9 @@ using MarketingAssistant.Core.Interfaces;
 using MarketingAssistant.Discord;
 using MarketingAssistant.Discord.Handlers;
 using MarketingAssistant.Infrastructure.AI;
+using MarketingAssistant.Infrastructure.Connectors;
 using MarketingAssistant.Infrastructure.Connectors.Mock;
+using MarketingAssistant.Infrastructure.Connectors.Options;
 using MarketingAssistant.Infrastructure.Data;
 using MarketingAssistant.Infrastructure.Services;
 using MarketingAssistant.Scheduling;
@@ -48,9 +50,13 @@ if (builder.Configuration.GetValue<bool>("DevMode:UseMockConnectors"))
 }
 else
 {
-    // TODO: Register real connectors in Fase 7
-    throw new InvalidOperationException(
-        "Real connectors are not yet implemented. Set DevMode:UseMockConnectors=true in appsettings.json.");
+    builder.Services.Configure<WooCommerceOptions>(builder.Configuration.GetSection(WooCommerceOptions.SectionName));
+    builder.Services.Configure<GoogleAnalyticsOptions>(builder.Configuration.GetSection(GoogleAnalyticsOptions.SectionName));
+    builder.Services.Configure<GoogleAdsOptions>(builder.Configuration.GetSection(GoogleAdsOptions.SectionName));
+
+    builder.Services.AddHttpClient<IWooCommerceConnector, WooCommerceConnector>();
+    builder.Services.AddScoped<IGoogleAnalyticsConnector, GoogleAnalyticsConnector>();
+    builder.Services.AddScoped<IGoogleAdsConnector, GoogleAdsConnector>();
 }
 
 // AI Brain
