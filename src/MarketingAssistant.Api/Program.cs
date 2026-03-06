@@ -1,6 +1,9 @@
 using MarketingAssistant.Api.Hubs;
 using MarketingAssistant.Api.Middleware;
+using MarketingAssistant.Core.Interfaces;
+using MarketingAssistant.Infrastructure.Connectors.Mock;
 using MarketingAssistant.Infrastructure.Data;
+using MarketingAssistant.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +33,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-// TODO: Register connectors, services (Fase 2+)
+// Connectors (mock/real toggle)
+if (builder.Configuration.GetValue<bool>("DevMode:UseMockConnectors"))
+{
+    builder.Services.AddSingleton<IWooCommerceConnector, MockWooCommerceConnector>();
+    builder.Services.AddSingleton<IGoogleAnalyticsConnector, MockGoogleAnalyticsConnector>();
+    builder.Services.AddSingleton<IGoogleAdsConnector, MockGoogleAdsConnector>();
+}
+
+// Services
+builder.Services.AddScoped<DataAggregator>();
 
 var app = builder.Build();
 
